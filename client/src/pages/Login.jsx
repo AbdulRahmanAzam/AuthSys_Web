@@ -35,9 +35,10 @@ const Login = () => {
           toast.error(response.data?.message || "Registration failed");
         }
       }else{
-        const response = await axios.post(backendUrl + "/api/auth/login", {
-          email, password
-        });
+        const response = await axios.post(backendUrl + "/api/auth/login", 
+          {email, password},
+          {withCredentials: true}
+        );
 
         if(response.data && response.data.success){
           setIsLoggedin(true);
