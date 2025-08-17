@@ -24,13 +24,19 @@ export const AppContextProvider = (props) => {
 
     const getAuthState = useCallback(async () => {
         try {
+            console.log('Trying to connect to:', backendUrl + '/api/auth/is-auth');
             const {data} = await axios.get(backendUrl + '/api/auth/is-auth');
             if(data.success){
                 setIsLoggedin(true);
                 getUserData();
             }
         } catch (error) {
-            toast.error(error.message);
+            console.error('Auth check failed:', error);
+            if (error.code === 'ERR_NETWORK') {
+                toast.error(`Cannot connect to backend at ${backendUrl}. Check if backend is running.`);
+            } else {
+                toast.error(error.message);
+            }
         }
     }, [backendUrl, getUserData])
 
