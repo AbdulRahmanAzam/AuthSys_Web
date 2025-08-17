@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState, useCallback } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
 
@@ -8,11 +8,21 @@ export const AppContextProvider = (props) => {
 
     axios.defaults.withCredentials = true;
 
-    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
     const [isLoggedin, setIsLoggedin] = useState(false);
     const [userData, setUserData] = useState(false);
 
-    const getAuthState = async () => {
+    const getUserData = useCallback(async () => {
+        try {
+            const {data} = await axios.get(backendUrl + '/api/user/data');
+            // toast.success("User data fetched successfully");
+            data.success ? setUserData(data.userData) : toast.error(data.message);
+        } catch (error) {
+            toast.error(error.message)
+        }
+    }, [backendUrl])
+
+    const getAuthState = useCallback(async () => {
         try {
             const {data} = await axios.get(backendUrl + '/api/auth/is-auth');
             if(data.success){
@@ -22,21 +32,11 @@ export const AppContextProvider = (props) => {
         } catch (error) {
             toast.error(error.message);
         }
-    }
-
-    const getUserData = async () => {
-        try {
-            const {data} = await axios.get(backendUrl + '/api/user/data');
-            // toast.success("User data fetched successfully");
-            data.success ? setUserData(data.userData) : toast.error(data.message);
-        } catch (error) {
-            toast.error(error.message)
-        }
-    }
+    }, [backendUrl, getUserData])
 
     useEffect(() => {
         getAuthState();
-    })
+    }, [getAuthState]) // Include getAuthState in dependency array
 
     const value = {
         backendUrl,
@@ -51,3 +51,5 @@ export const AppContextProvider = (props) => {
         </AppContext.Provider>
     )
 }
+
+// export default AppContext;
